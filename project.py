@@ -1,84 +1,88 @@
 class Flight:
-    def _init_(self, flight_id, origin, destination, price, seats_available):
+    def __init__(self, flight_id, airline, source, destination, date, total_seats):
         self.flight_id = flight_id
-        self.origin = origin
+        self.airline = airline
+        self.source = source
         self.destination = destination
-        self.price = price
-        self.seats_available = seats_available
-
+        self.date = date
+        self.total_seats = total_seats
+        self.booked_seats = 0
+    
+    def is_available(self):
+        return self.total_seats - self.booked_seats > 0
+    
     def book_seat(self):
-        if self.seats_available > 0:
-            self.seats_available -= 1
-            return True
-        return False
+        if self.is_available():
+            self.booked_seats += 1
+            print(f"Seat booked successfully on Flight {self.flight_id}.")
+        else:
+            print(f"Sorry, no available seats on Flight {self.flight_id}.")
 
-    def _str_(self):
-        return f"Flight ID: {self.flight_id} | {self.origin} -> {self.destination} | Price: ${self.price} | Seats Available: {self.seats_available}"
+    def __str__(self):
+        return f"Flight {self.flight_id} - {self.airline}\nFrom: {self.source} to {self.destination}\nDate: {self.date}\nSeats Available: {self.total_seats - self.booked_seats}"
 
 
 class FlightBookingSystem:
-    def _init_(self):
-        self.flights = [
-            Flight(101, "New York", "London", 500, 50),
-            Flight(102, "Los Angeles", "Tokyo", 700, 30),
-            Flight(103, "San Francisco", "Paris", 600, 40),
-            Flight(104, "Chicago", "Dubai", 800, 20),
-            Flight(105, "Miami", "Berlin", 550, 60)]
-
-    def display_flights(self):
-        print("Available Flights:")
+    def __init__(self):
+        self.flights = []
+    
+    def add_flight(self, flight):
+        self.flights.append(flight)
+    
+    def search_flights(self, source, destination, date):
+        available_flights = []
         for flight in self.flights:
-            print(flight)
-
-    def search_flights(self, origin, destination):
-        available_flights = [flight for flight in self.flights if flight.origin.lower() == origin.lower() and flight.destination.lower() == destination.lower()]
+            if flight.source == source and flight.destination == destination and flight.date == date:
+                available_flights.append(flight)
         return available_flights
-
+    
     def book_flight(self, flight_id):
         for flight in self.flights:
             if flight.flight_id == flight_id:
-                if flight.book_seat():
-                    print(f"Booking successful for {flight.origin} -> {flight.destination}.")
-                    return True
-                else:
-                    print("Sorry, no seats available on this flight.")
-                    return False
+                flight.book_seat()
+                return
         print("Flight not found.")
-        return False
+    
+    def show_flights(self, available_flights):
+        if not available_flights:
+            print("No available flights found.")
+            return
+        for flight in available_flights:
+            print(flight)
+            print("-" * 50)
 
 
 def main():
+    # Initialize the flight booking system
     system = FlightBookingSystem()
+    
+    # Add some sample flights to the system
+    flight1 = Flight("AI101", "Air India", "New York", "London", "2024-12-25", 100)
+    flight2 = Flight("BA202", "British Airways", "New York", "London", "2024-12-25", 50)
+    flight3 = Flight("UA303", "United Airlines", "New York", "Paris", "2024-12-25", 70)
+    
+    system.add_flight(flight1)
+    system.add_flight(flight2)
+    system.add_flight(flight3)
+    
+    print("Welcome to the Flight Booking System!")
+    
+    # Search for available flights
+    source = input("Enter source city: ")
+    destination = input("Enter destination city: ")
+    date = input("Enter date of travel (YYYY-MM-DD): ")
 
-    while True:
-        print("\nFlight Booking System")
-        print("1. Display Available Flights")
-        print("2. Search Flights by Origin and Destination")
-        print("3. Book a Flight")
-        print("4. Exit")
+    available_flights = system.search_flights(source, destination, date)
+    system.show_flights(available_flights)
+    
+    # Book a flight if available
+    if available_flights:
+        flight_id = input("Enter the flight ID to book a seat: ")
+        system.book_flight(flight_id)
+        
+        # Show updated flight details
+        system.show_flights(system.search_flights(source, destination, date))
 
-        choice = input("Enter your choice (1-4): ")
 
-        if choice == '1':
-            system.display_flights()
-        elif choice == '2':
-            origin = input("Enter origin city: ")
-            destination = input("Enter destination city: ")
-            available_flights = system.search_flights(origin, destination)
-            if available_flights:
-                print("Available Flights:")
-                for flight in available_flights:
-                    print(flight)
-            else:
-                print(f"No flights found from {origin} to {destination}.")
-        elif choice == '3':
-            flight_id = int(input("Enter Flight ID to book: "))
-            system.book_flight(flight_id)
-        elif choice == '4':
-            print("Thank you for using the Flight Booking System. Goodbye!")
-            break
-        else:
-            print("Invalid choice. Please enter a number between 1 and 4.")
-
-if __name__ == "_main_":
+if __name__ == "__main__":
     main()
